@@ -1,0 +1,2574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>피켓 자동 생성기 | 포카드 홀덤펍</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Noto+Sans+KR:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "KoPubDotum";
+      src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2202@1.0/KoPubDotumMedium.woff") format("woff");
+      font-weight: 500;
+      font-style: normal;
+    }
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --border: #d9e0e7;
+      --accent: #0ea5a5;
+      --accent-dim: #0f8f8f;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #ffffff 0%, #f3f6fa 100%);
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(320px, 400px) 1fr;
+      min-height: calc(100vh - 72px);
+    }
+
+    @media (max-width: 960px) {
+      .app { grid-template-columns: 1fr; }
+    }
+
+    .controls {
+      padding: 1rem 1.25rem 2rem;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      max-height: calc(100vh - 72px);
+      background: #eef2f6;
+    }
+
+    .section {
+      --section-accent: var(--accent);
+      margin-bottom: 1rem;
+      padding: 0.9rem 0.85rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .section:last-child { margin-bottom: 0; }
+
+    .section h2 {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 1.08rem;
+      letter-spacing: 0.02em;
+      color: #374151;
+      margin-bottom: 0.65rem;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      margin-bottom: 0.65rem;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .size-btns {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .size-btns button {
+      flex: 1;
+      padding: 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: inherit;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .size-btns button.active {
+      border-color: var(--accent);
+      background: rgba(14, 165, 165, 0.12);
+      color: var(--accent);
+    }
+
+    .rank-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .rank-tabs button {
+      padding: 0.35rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .rank-tabs button.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(14, 165, 165, 0.1);
+    }
+
+    .winner-block {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .winner-block h3 {
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .winner-block h3.rank-editable {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .winner-block h3.rank-editable input {
+      width: auto;
+      min-width: 3.5rem;
+      max-width: 5rem;
+      padding: 0.2rem 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .winner-block h3.rank-editable .rank-en-input {
+      max-width: 4rem;
+    }
+
+    .btn-remove-rank {
+      margin-left: auto;
+      padding: 0.2rem 0.5rem;
+      border: 1px solid rgba(255, 100, 100, 0.45);
+      border-radius: 4px;
+      background: transparent;
+      color: #ef4444;
+      font-size: 0.7rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-remove-rank:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .custom-ranks-head {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0.75rem 0 0.5rem;
+    }
+
+    #addCustomRank {
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .checkbox-row input { width: auto; margin: 0; }
+
+    .pin-row {
+      margin-top: -0.2rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .pin-row span {
+      font-size: 0.75rem;
+    }
+
+    .pin-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-left: 0.55rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .pin-inline input {
+      margin: 0;
+      width: auto;
+    }
+
+    .pin-inline input[type="checkbox"] {
+      accent-color: #9ca3af;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.15s;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+      color: #042a22;
+      margin-bottom: 0.5rem;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #1f2937;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    .control-tabs {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #eef2f6;
+      padding-top: 0.25rem;
+    }
+
+    .control-tabs button {
+      flex: 1;
+      padding: 0.55rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+
+    .control-tabs button.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(14, 165, 165, 0.1);
+    }
+
+    .section--size { --section-accent: #14b8a6; }
+    .section--logo { --section-accent: #60a5fa; }
+    .section--background { --section-accent: #a78bfa; }
+    .section--title { --section-accent: #f59e0b; }
+    .section--ranks { --section-accent: #f97316; }
+    .section--export { --section-accent: #22c55e; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .style-group {
+      --style-accent: var(--accent);
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .style-group h3 {
+      font-size: 1.12rem;
+      font-weight: 900;
+      color: #374151;
+      margin-bottom: 0.65rem;
+    }
+
+    .style-group[data-style-key="titleMain"] { --style-accent: #f59e0b; }
+    .style-group[data-style-key="titleSub"] { --style-accent: #eab308; }
+    .style-group[data-style-key="event"] { --style-accent: #06b6d4; }
+    .style-group[data-style-key="winner"] { --style-accent: #f97316; }
+    .style-group[data-style-key="prize"] { --style-accent: #22c55e; }
+
+    .style-mode {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .style-mode button {
+      flex: 1;
+      padding: 0.4rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .style-mode button.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(14, 165, 165, 0.1);
+    }
+
+    .color-row {
+      display: grid;
+      grid-template-columns: 2.25rem 1fr;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .color-row input[type="color"] {
+      width: 2.25rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .color-row input[type="text"] {
+      margin-bottom: 0;
+    }
+
+    input[type="range"].style-range {
+      width: 100%;
+      margin-bottom: 0.35rem;
+    }
+
+    .range-val {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: right;
+      margin-bottom: 0.5rem;
+    }
+
+    .style-layout-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .style-layout-grid > div input {
+      margin-bottom: 0;
+    }
+
+    .style-layout-grid > div .range-val {
+      margin-bottom: 0;
+    }
+
+    .gradient-template-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.45rem;
+      margin-bottom: 0.55rem;
+      align-items: end;
+    }
+
+    .gradient-template-row select,
+    .gradient-template-row input[type="text"] {
+      margin-bottom: 0;
+    }
+
+    .gradient-template-actions {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 0.45rem;
+      margin-bottom: 0.65rem;
+      align-items: end;
+    }
+
+    .btn-mini {
+      width: auto;
+      padding: 0.48rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #ffffff;
+      color: #374151;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-mini:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .preview-area {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f8fafc;
+      overflow: auto;
+    }
+
+    .preview-toolbar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .preview-toolbar span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .preview-zoom {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .preview-zoom input[type="range"] { width: 120px; }
+
+    .preview-frame {
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+      overflow: auto;
+      max-width: 100%;
+    }
+
+    .preview-frame.space-pan {
+      cursor: grab;
+    }
+
+    .preview-frame.panning {
+      cursor: grabbing;
+      user-select: none;
+    }
+
+    .preview-frame.panning * {
+      user-select: none;
+    }
+
+    .preview-scaler {
+      transform-origin: top left;
+      display: inline-block;
+      /* 스페이스바 팬 시 화면 끝에서 바로 막히지 않도록 여유 공간 확보 */
+      padding-right: 260px;
+      padding-bottom: 120px;
+    }
+
+    /* ===== Picket canvas (print layout) ===== */
+    .picket {
+      position: relative;
+      overflow: hidden;
+      background: #111;
+      font-family: "Montserrat", "Noto Sans KR", sans-serif;
+    }
+
+    .picket-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .picket-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.35) 0%,
+        rgba(0, 0, 0, 0.05) 35%,
+        rgba(0, 0, 0, 0.15) 70%,
+        rgba(0, 0, 0, 0.45) 100%
+      );
+      pointer-events: none;
+    }
+
+    .picket-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4% 5% 5%;
+    }
+
+    .logo-slot.placed {
+      position: absolute;
+      z-index: 5;
+      pointer-events: none;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .logo-slot.placed.center-anchor {
+      transform: translateX(-50%);
+      justify-content: center;
+    }
+
+    .logo-slot img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+    }
+
+    .logo-adjust {
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 0.6rem 0.65rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .logo-adjust label { margin-top: 0.25rem; }
+    .logo-adjust .row-2 input { margin-bottom: 0; }
+
+    .picket-titles {
+      position: absolute;
+      left: 50%;
+      top: 31%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 38%;
+      text-align: center;
+      overflow: visible;
+    }
+
+    .title-line1 {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 0.95;
+      white-space: pre-line;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      margin: 0;
+    }
+
+    .title-line2 {
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      position: absolute;
+      left: 50%;
+      top: 40%;
+      margin: 0;
+    }
+
+    .event-pill {
+      display: inline-block;
+      padding: 0.35em 1.45em;
+      border-radius: 999px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      max-width: none;
+      white-space: nowrap;
+      position: absolute;
+      left: 50%;
+      top: 72%;
+      margin: 0;
+      isolation: isolate;
+      overflow: visible;
+      box-sizing: border-box;
+    }
+
+    .event-pill-cutout {
+      display: inline-block;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-font-smoothing: antialiased;
+      transform: scale(1.18);
+      transform-origin: center center;
+    }
+
+    .picket-center {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      text-align: center;
+      overflow: visible;
+    }
+
+    .picket-winner-zone {
+      width: 100%;
+      text-align: center;
+      margin-top: 0;
+      position: relative;
+      overflow: visible;
+      position: absolute;
+      left: 50%;
+      top: 61%;
+      transform: translateX(-50%);
+    }
+
+    .winner-layout-adjust {
+      background: rgba(14, 165, 165, 0.07);
+      border: 1px solid rgba(14, 165, 165, 0.3);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .winner-layout-adjust h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.65rem;
+    }
+
+    .winner-layout-adjust input[type="range"] {
+      width: 100%;
+      margin-bottom: 0.25rem;
+    }
+
+    .winner-line {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      white-space: nowrap;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      margin: 0;
+      padding: 0 0.08em;
+      overflow: visible;
+    }
+
+    .winner-rank-num {
+      display: inline-block;
+      font-size: 1.7em;
+      line-height: 0.9;
+      margin-right: 0.02em;
+      vertical-align: baseline;
+    }
+
+    .winner-rank-suffix {
+      display: inline-block;
+      vertical-align: baseline;
+    }
+
+    .prize-line {
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      white-space: nowrap;
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      margin: 0;
+      padding: 0 0.08em;
+      overflow: visible;
+    }
+
+    .status-toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      background: #ffffff;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .status-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #export-render {
+      position: fixed;
+      left: -99999px;
+      top: 0;
+      pointer-events: none;
+    }
+
+    #tabContent .section { background: #ffffff; }
+    #tabStyles .style-group { background: #ffffff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>피켓 자동 생성기</h1>
+  </header>
+
+  <div class="app">
+    <aside class="controls">
+      <nav class="control-tabs" aria-label="설정 탭">
+        <button type="button" class="control-tab active" data-tab="content">피켓 내용</button>
+        <button type="button" class="control-tab" data-tab="styles">글자 스타일</button>
+      </nav>
+
+      <div id="tabContent" class="tab-panel active">
+      <section class="section section--size">
+        <h2>피켓 사이즈</h2>
+        <div class="size-btns">
+          <button type="button" class="size-btn active" data-w="595" data-h="420">큰 피켓 595×420mm</button>
+          <button type="button" class="size-btn" data-w="400" data-h="260">작은 피켓 400×260mm</button>
+        </div>
+      </section>
+
+      <section class="section section--logo">
+        <h2>로고</h2>
+        <label>로고 1 — 좌측 상단</label>
+        <input type="file" id="logo1" accept="image/*" />
+        <p class="hint" id="logo1PinnedState"></p>
+        <div class="logo-adjust">
+          <label for="logo1Size">크기 (가로 %)</label>
+          <input type="range" class="style-range" id="logo1Size" min="5" max="45" value="25" />
+          <div class="range-val"><span id="logo1SizeVal">25</span>%</div>
+          <div class="row-2">
+            <div>
+              <label for="logo1X">X 위치</label>
+              <input type="range" class="style-range" id="logo1X" value="5" min="0" max="100" step="0.5" />
+              <div class="range-val"><span id="logo1XVal">5</span>%</div>
+            </div>
+            <div>
+              <label for="logo1Y">Y 위치</label>
+              <input type="range" class="style-range" id="logo1Y" value="4" min="0" max="50" step="0.5" />
+              <div class="range-val"><span id="logo1YVal">4</span>%</div>
+            </div>
+          </div>
+        </div>
+        <label>로고 2 — 상단 중앙</label>
+        <input type="file" id="logo2" accept="image/*" />
+        <p class="hint" id="logo2PinnedState"></p>
+        <div class="logo-adjust">
+          <label for="logo2Size">크기 (가로 %)</label>
+          <input type="range" class="style-range" id="logo2Size" min="5" max="45" value="22" />
+          <div class="range-val"><span id="logo2SizeVal">22</span>%</div>
+          <div class="row-2">
+            <div>
+              <label for="logo2X">X 위치</label>
+              <input type="range" class="style-range" id="logo2X" value="50" min="0" max="100" step="0.5" />
+              <div class="range-val"><span id="logo2XVal">50</span>%</div>
+            </div>
+            <div>
+              <label for="logo2Y">Y 위치</label>
+              <input type="range" class="style-range" id="logo2Y" value="4" min="0" max="50" step="0.5" />
+              <div class="range-val"><span id="logo2YVal">4</span>%</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--background">
+        <h2>배경 이미지</h2>
+        <input type="file" id="bgImage" accept="image/*" />
+      </section>
+
+      <section class="section section--title">
+        <h2>대회명</h2>
+        <label>메인 타이틀</label>
+        <textarea id="titleLine1" rows="2" placeholder="ROAD TOUR&#10;또는 WINTER">ROAD TOUR</textarea>
+        <label>서브 타이틀</label>
+        <input type="text" id="titleLine2" value="SERIES" />
+        <label>이벤트 뱃지</label>
+        <input type="text" id="eventBadge" value="DAILY in SEOUL" placeholder="DUO TEAM in Daegu" />
+      </section>
+
+      <section class="section section--ranks">
+        <h2>등수별 정보</h2>
+        <div class="rank-tabs" id="rankTabs"></div>
+        <div id="winnerFields"></div>
+        <p class="custom-ranks-head">추가 등수</p>
+        <div id="customRankList"></div>
+        <button type="button" class="btn btn-secondary" id="addCustomRank">+ 등수 추가</button>
+      </section>
+
+      <section class="section section--export">
+        <h2>보내기</h2>
+        <button type="button" class="btn btn-primary" id="exportCurrent">현재 등수 PDF 저장</button>
+        <button type="button" class="btn btn-secondary" id="exportAll">전체 등수 PDF (여러 페이지)</button>
+        <p class="hint">인쇄 해상도 약 300dpi. 생성에 수 초 걸릴 수 있습니다.</p>
+      </section>
+      </div>
+
+      <div id="tabStyles" class="tab-panel">
+        <div class="style-group" data-style-key="titleMain">
+          <h3>대회명 (메인)</h3>
+          <label>폰트</label>
+          <select data-field="fontFamily">
+            <option value="pretendard">프리텐다드</option>
+            <option value="notoSans">노토산스</option>
+            <option value="kopub">코펍돋움</option>
+          </select>
+          <div class="style-layout-grid">
+            <div>
+              <label>크기(%)</label>
+              <input type="range" class="style-range" data-field="sizeScale" min="-60" max="160" step="1" value="0" />
+              <div class="range-val" data-range-label="sizeScale">0%</div>
+            </div>
+            <div>
+              <label>Y(%)</label>
+              <input type="range" class="style-range" data-field="offsetY" min="-100" max="100" step="0.5" value="0" />
+              <div class="range-val" data-range-label="offsetY">0%</div>
+            </div>
+          </div>
+          <div class="style-mode" data-mode-for="titleMain">
+            <button type="button" class="active" data-mode="solid">단색</button>
+            <button type="button" data-mode="gradient">그라데이션</button>
+          </div>
+          <div class="style-solid" data-solid-for="titleMain">
+            <div class="color-row">
+              <input type="color" data-field="color" value="#ffffff" />
+              <input type="text" data-field="color" value="#ffffff" maxlength="7" />
+            </div>
+          </div>
+          <div class="style-gradient" data-gradient-for="titleMain" hidden>
+            <label>시작 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradStart" value="#ffe8a3" />
+              <input type="text" data-field="gradStart" value="#ffe8a3" maxlength="7" />
+            </div>
+            <label>끝 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradEnd" value="#8b5a2b" />
+              <input type="text" data-field="gradEnd" value="#8b5a2b" maxlength="7" />
+            </div>
+            <label>그라데이션 각도</label>
+            <input type="range" class="style-range" data-field="gradAngle" min="0" max="360" value="180" />
+            <div class="range-val" data-range-label="gradAngle">180°</div>
+          </div>
+          <label>글자 그림자 (선택)</label>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="shadowOn" checked />
+            <span>그림자 사용</span>
+          </div>
+          <div class="color-row">
+            <input type="color" data-field="shadowColor" value="#000000" />
+            <input type="text" data-field="shadowColor" value="#000000" maxlength="7" />
+          </div>
+          <label>그림자 흐림</label>
+          <input type="range" class="style-range" data-field="shadowBlur" min="0" max="40" value="12" />
+          <div class="range-val" data-range-label="shadowBlur">12px</div>
+        </div>
+
+        <div class="style-group" data-style-key="titleSub">
+          <h3>서브타이틀</h3>
+          <label>폰트</label>
+          <select data-field="fontFamily">
+            <option value="pretendard">프리텐다드</option>
+            <option value="notoSans">노토산스</option>
+            <option value="kopub">코펍돋움</option>
+          </select>
+          <div class="style-layout-grid">
+            <div>
+              <label>크기(%)</label>
+              <input type="range" class="style-range" data-field="sizeScale" min="-60" max="160" step="1" value="0" />
+              <div class="range-val" data-range-label="sizeScale">0%</div>
+            </div>
+            <div>
+              <label>Y(%)</label>
+              <input type="range" class="style-range" data-field="offsetY" min="-100" max="100" step="0.5" value="0" />
+              <div class="range-val" data-range-label="offsetY">0%</div>
+            </div>
+          </div>
+          <div class="style-mode" data-mode-for="titleSub">
+            <button type="button" class="active" data-mode="solid">단색</button>
+            <button type="button" data-mode="gradient">그라데이션</button>
+          </div>
+          <div class="style-solid" data-solid-for="titleSub">
+            <div class="color-row">
+              <input type="color" data-field="color" value="#ffffff" />
+              <input type="text" data-field="color" value="#ffffff" maxlength="7" />
+            </div>
+          </div>
+          <div class="style-gradient" data-gradient-for="titleSub" hidden>
+            <label>시작 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradStart" value="#ffe8a3" />
+              <input type="text" data-field="gradStart" value="#ffe8a3" maxlength="7" />
+            </div>
+            <label>끝 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradEnd" value="#8b5a2b" />
+              <input type="text" data-field="gradEnd" value="#8b5a2b" maxlength="7" />
+            </div>
+            <label>그라데이션 각도</label>
+            <input type="range" class="style-range" data-field="gradAngle" min="0" max="360" value="180" />
+            <div class="range-val" data-range-label="gradAngle">180°</div>
+          </div>
+          <label>글자 그림자 (선택)</label>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="shadowOn" checked />
+            <span>그림자 사용</span>
+          </div>
+          <div class="color-row">
+            <input type="color" data-field="shadowColor" value="#000000" />
+            <input type="text" data-field="shadowColor" value="#000000" maxlength="7" />
+          </div>
+          <label>그림자 흐림</label>
+          <input type="range" class="style-range" data-field="shadowBlur" min="0" max="40" value="12" />
+          <div class="range-val" data-range-label="shadowBlur">12px</div>
+        </div>
+
+        <div class="style-group" data-style-key="event">
+          <h3>이벤트명 (뱃지)</h3>
+          <label>폰트</label>
+          <select data-field="fontFamily">
+            <option value="pretendard">프리텐다드</option>
+            <option value="notoSans">노토산스</option>
+            <option value="kopub">코펍돋움</option>
+          </select>
+          <div class="style-layout-grid">
+            <div>
+              <label>크기(%)</label>
+              <input type="range" class="style-range" data-field="sizeScale" min="-60" max="160" step="1" value="0" />
+              <div class="range-val" data-range-label="sizeScale">0%</div>
+            </div>
+            <div>
+              <label>Y(%)</label>
+              <input type="range" class="style-range" data-field="offsetY" min="-100" max="100" step="0.5" value="0" />
+              <div class="range-val" data-range-label="offsetY">0%</div>
+            </div>
+          </div>
+          <label>배경 색</label>
+          <div class="color-row">
+            <input type="color" data-field="bgColor" value="#ffffff" />
+            <input type="text" data-field="bgColor" value="#ffffff" maxlength="7" />
+          </div>
+          <label>뱃지 그림자 (선택)</label>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="shadowOn" checked />
+            <span>그림자 사용</span>
+          </div>
+          <div class="color-row">
+            <input type="color" data-field="shadowColor" value="#000000" />
+            <input type="text" data-field="shadowColor" value="#000000" maxlength="7" />
+          </div>
+          <label>그림자 흐림</label>
+          <input type="range" class="style-range" data-field="shadowBlur" min="0" max="40" value="12" />
+          <div class="range-val" data-range-label="shadowBlur">12px</div>
+        </div>
+
+        <div class="style-group" data-style-key="winner">
+          <h3>등수 &amp; 이름</h3>
+          <label>폰트</label>
+          <select data-field="fontFamily">
+            <option value="pretendard">프리텐다드</option>
+            <option value="notoSans">노토산스</option>
+            <option value="kopub">코펍돋움</option>
+          </select>
+          <div class="style-layout-grid">
+            <div>
+              <label>크기(%)</label>
+              <input type="range" class="style-range" data-field="sizeScale" min="-60" max="160" step="1" value="0" />
+              <div class="range-val" data-range-label="sizeScale">0%</div>
+            </div>
+            <div>
+              <label>Y(%)</label>
+              <input type="range" class="style-range" data-field="offsetY" min="-100" max="100" step="0.5" value="0" />
+              <div class="range-val" data-range-label="offsetY">0%</div>
+            </div>
+          </div>
+          <div class="style-mode" data-mode-for="winner">
+            <button type="button" class="active" data-mode="solid">단색</button>
+            <button type="button" data-mode="gradient">그라데이션</button>
+          </div>
+          <div class="style-solid" data-solid-for="winner">
+            <div class="color-row">
+              <input type="color" data-field="color" value="#ffffff" />
+              <input type="text" data-field="color" value="#ffffff" maxlength="7" />
+            </div>
+          </div>
+          <div class="style-gradient" data-gradient-for="winner" hidden>
+            <div class="gradient-template-row">
+              <div>
+                <label for="winnerGradientTemplateSelect">그라데이션 템플릿</label>
+                <select id="winnerGradientTemplateSelect">
+                  <option value="">템플릿 선택</option>
+                </select>
+              </div>
+              <button type="button" class="btn-mini" id="winnerGradientTemplateApply">적용</button>
+            </div>
+            <div class="gradient-template-actions">
+              <div>
+                <label for="winnerGradientTemplateName">템플릿 이름</label>
+                <input type="text" id="winnerGradientTemplateName" maxlength="24" placeholder="예: 골드 톤" />
+              </div>
+              <button type="button" class="btn-mini" id="winnerGradientTemplateSave">저장</button>
+              <button type="button" class="btn-mini" id="winnerGradientTemplateDelete">삭제</button>
+            </div>
+            <label>시작 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradStart" value="#fff9e6" />
+              <input type="text" data-field="gradStart" value="#fff9e6" maxlength="7" />
+            </div>
+            <label>끝 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradEnd" value="#8b6914" />
+              <input type="text" data-field="gradEnd" value="#8b6914" maxlength="7" />
+            </div>
+            <label>그라데이션 각도</label>
+            <input type="range" class="style-range" data-field="gradAngle" min="0" max="360" value="180" />
+            <div class="range-val" data-range-label="gradAngle">180°</div>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="italicOn" />
+            <span>기울기 사용</span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="borderOn" />
+            <span>테두리 사용</span>
+          </div>
+          <div class="color-row">
+            <input type="color" data-field="borderColor" value="#000000" />
+            <input type="text" data-field="borderColor" value="#000000" maxlength="7" />
+          </div>
+          <label>테두리 두께</label>
+          <input type="range" class="style-range" data-field="borderWidth" min="0" max="12" step="0.5" value="2" />
+          <div class="range-val" data-range-label="borderWidth">2px</div>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="shadowOn" checked />
+            <span>그림자 사용</span>
+          </div>
+          <div class="color-row">
+            <input type="color" data-field="shadowColor" value="#000000" />
+            <input type="text" data-field="shadowColor" value="#000000" maxlength="7" />
+          </div>
+          <label>그림자 흐림</label>
+          <input type="range" class="style-range" data-field="shadowBlur" min="0" max="40" value="10" />
+          <div class="range-val" data-range-label="shadowBlur">10px</div>
+        </div>
+
+        <div class="style-group" data-style-key="prize">
+          <h3>상금</h3>
+          <label>폰트</label>
+          <select data-field="fontFamily">
+            <option value="pretendard">프리텐다드</option>
+            <option value="notoSans">노토산스</option>
+            <option value="kopub">코펍돋움</option>
+          </select>
+          <div class="style-layout-grid">
+            <div>
+              <label>크기(%)</label>
+              <input type="range" class="style-range" data-field="sizeScale" min="-60" max="160" step="1" value="0" />
+              <div class="range-val" data-range-label="sizeScale">0%</div>
+            </div>
+            <div>
+              <label>Y(%)</label>
+              <input type="range" class="style-range" data-field="offsetY" min="-100" max="100" step="0.5" value="0" />
+              <div class="range-val" data-range-label="offsetY">0%</div>
+            </div>
+          </div>
+          <div class="style-mode" data-mode-for="prize">
+            <button type="button" class="active" data-mode="solid">단색</button>
+            <button type="button" data-mode="gradient">그라데이션</button>
+          </div>
+          <div class="style-solid" data-solid-for="prize">
+            <div class="color-row">
+              <input type="color" data-field="color" value="#ffffff" />
+              <input type="text" data-field="color" value="#ffffff" maxlength="7" />
+            </div>
+          </div>
+          <div class="style-gradient" data-gradient-for="prize" hidden>
+            <div class="gradient-template-row">
+              <div>
+                <label for="prizeGradientTemplateSelect">그라데이션 템플릿</label>
+                <select id="prizeGradientTemplateSelect">
+                  <option value="">템플릿 선택</option>
+                </select>
+              </div>
+              <button type="button" class="btn-mini" id="prizeGradientTemplateApply">적용</button>
+            </div>
+            <div class="gradient-template-actions">
+              <div>
+                <label for="prizeGradientTemplateName">템플릿 이름</label>
+                <input type="text" id="prizeGradientTemplateName" maxlength="24" placeholder="예: 실버 톤" />
+              </div>
+              <button type="button" class="btn-mini" id="prizeGradientTemplateSave">저장</button>
+              <button type="button" class="btn-mini" id="prizeGradientTemplateDelete">삭제</button>
+            </div>
+            <label>시작 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradStart" value="#fff9e6" />
+              <input type="text" data-field="gradStart" value="#fff9e6" maxlength="7" />
+            </div>
+            <label>끝 색</label>
+            <div class="color-row">
+              <input type="color" data-field="gradEnd" value="#8b6914" />
+              <input type="text" data-field="gradEnd" value="#8b6914" maxlength="7" />
+            </div>
+            <label>그라데이션 각도</label>
+            <input type="range" class="style-range" data-field="gradAngle" min="0" max="360" value="180" />
+            <div class="range-val" data-range-label="gradAngle">180°</div>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="italicOn" />
+            <span>기울기 사용</span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="borderOn" />
+            <span>테두리 사용</span>
+          </div>
+          <div class="color-row">
+            <input type="color" data-field="borderColor" value="#000000" />
+            <input type="text" data-field="borderColor" value="#000000" maxlength="7" />
+          </div>
+          <label>테두리 두께</label>
+          <input type="range" class="style-range" data-field="borderWidth" min="0" max="12" step="0.5" value="2" />
+          <div class="range-val" data-range-label="borderWidth">2px</div>
+          <div class="checkbox-row">
+            <input type="checkbox" data-field="shadowOn" checked />
+            <span>그림자 사용</span>
+          </div>
+          <div class="color-row">
+            <input type="color" data-field="shadowColor" value="#000000" />
+            <input type="text" data-field="shadowColor" value="#000000" maxlength="7" />
+          </div>
+          <label>그림자 흐림</label>
+          <input type="range" class="style-range" data-field="shadowBlur" min="0" max="40" value="10" />
+          <div class="range-val" data-range-label="shadowBlur">10px</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="preview-area">
+      <div class="preview-toolbar">
+        <span id="previewLabel">미리보기 — 1등</span>
+        <div class="preview-zoom">
+          <label for="zoomRange">확대</label>
+          <input type="range" id="zoomRange" min="15" max="80" value="35" />
+          <span id="zoomPct">35%</span>
+        </div>
+      </div>
+      <div class="preview-frame">
+        <div class="preview-scaler" id="previewScaler">
+          <div id="picketPreview"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="export-render"></div>
+  <div class="status-toast" id="toast"></div>
+
+  <script>
+    const MM_TO_PX = 3.7795275591;
+    const FIXED_RANKS = [
+      { key: 1, label: "1등", rank: "1st" },
+      { key: 2, label: "2등", rank: "2nd" },
+      { key: 3, label: "3등", rank: "3rd" },
+    ];
+
+    const defaultTextStyle = () => ({
+      mode: "solid",
+      color: "#ffffff",
+      gradStart: "#fff9e6",
+      gradEnd: "#8b6914",
+      gradAngle: 180,
+      borderOn: false,
+      borderColor: "#000000",
+      borderWidth: 2,
+      shadowOn: true,
+      shadowColor: "#000000",
+      shadowBlur: 12,
+      sizeScale: 0,
+      offsetY: 0,
+      fontFamily: "pretendard",
+    });
+
+    const state = {
+      widthMm: 595,
+      heightMm: 420,
+      activeRank: 1,
+      logos: { logo1: null, logo2: null },
+      background: null,
+      textStyles: {
+        titleMain: defaultTextStyle(),
+        titleSub: defaultTextStyle(),
+        event: {
+          bgColor: "#ffffff",
+          bgOpacity: 100,
+          shadowOn: true,
+          shadowColor: "#000000",
+          shadowBlur: 12,
+          sizeScale: 0,
+          offsetY: 0,
+          fontFamily: "pretendard",
+        },
+        winner: { ...defaultTextStyle(), shadowBlur: 10, italicOn: false },
+        prize: { ...defaultTextStyle(), shadowBlur: 10, italicOn: false },
+      },
+      customRanks: [],
+      winners: {
+        1: { name: "홍길동", prize: "1,000,000GTD", enabled: true },
+        2: { name: "", prize: "", enabled: true },
+        3: { name: "", prize: "", enabled: true },
+      },
+    };
+
+    const PIN_STORAGE_KEY = "picketPinnedFieldsV1";
+    const GRADIENT_TEMPLATE_STORAGE_KEY = "picketGradientTemplatesV1";
+    const pinStore = loadPinStore();
+    const gradientTemplateStore = loadGradientTemplateStore();
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    const panState = {
+      spaceDown: false,
+      dragging: false,
+      startX: 0,
+      startY: 0,
+      scrollLeft: 0,
+      scrollTop: 0,
+    };
+
+    function toast(msg) {
+      const el = $("#toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 3200);
+    }
+
+    function loadPinStore() {
+      try {
+        const raw = localStorage.getItem(PIN_STORAGE_KEY);
+        if (!raw) return { pinned: {}, data: {} };
+        const parsed = JSON.parse(raw);
+        return {
+          pinned: parsed?.pinned && typeof parsed.pinned === "object" ? parsed.pinned : {},
+          data: parsed?.data && typeof parsed.data === "object" ? parsed.data : {},
+        };
+      } catch (err) {
+        console.warn("핀 저장값 로드 실패:", err);
+        return { pinned: {}, data: {} };
+      }
+    }
+
+    function defaultGradientTemplates() {
+      return {
+        winner: [
+          { id: "winner_gold", name: "기본 골드", start: "#fff9e6", end: "#8b6914", angle: 180 },
+          { id: "winner_orange", name: "선셋 오렌지", start: "#ffe2b8", end: "#c2410c", angle: 180 },
+        ],
+        prize: [
+          { id: "prize_gold", name: "기본 골드", start: "#fff9e6", end: "#8b6914", angle: 180 },
+          { id: "prize_blue", name: "쿨 블루", start: "#dbeafe", end: "#1d4ed8", angle: 180 },
+        ],
+      };
+    }
+
+    function sanitizeGradientTemplate(raw, fallbackIdPrefix) {
+      if (!raw || typeof raw !== "object") return null;
+      const name = String(raw.name || "").trim();
+      const start = normalizeHex(raw.start, "");
+      const end = normalizeHex(raw.end, "");
+      const angle = Number(raw.angle);
+      if (!name || !start || !end || !Number.isFinite(angle)) return null;
+      const id = String(raw.id || `${fallbackIdPrefix}_${Date.now()}_${Math.floor(Math.random() * 1000)}`);
+      return {
+        id,
+        name: name.slice(0, 24),
+        start,
+        end,
+        angle: Math.max(0, Math.min(360, Math.round(angle))),
+      };
+    }
+
+    function loadGradientTemplateStore() {
+      const defaults = defaultGradientTemplates();
+      try {
+        const raw = localStorage.getItem(GRADIENT_TEMPLATE_STORAGE_KEY);
+        if (!raw) return defaults;
+        const parsed = JSON.parse(raw);
+        const winnerList = Array.isArray(parsed?.winner) ? parsed.winner : defaults.winner;
+        const prizeList = Array.isArray(parsed?.prize) ? parsed.prize : defaults.prize;
+        return {
+          winner: winnerList
+            .map((item) => sanitizeGradientTemplate(item, "winner"))
+            .filter(Boolean),
+          prize: prizeList
+            .map((item) => sanitizeGradientTemplate(item, "prize"))
+            .filter(Boolean),
+        };
+      } catch (err) {
+        console.warn("그라데이션 템플릿 로드 실패:", err);
+        return defaults;
+      }
+    }
+
+    function saveGradientTemplateStore() {
+      try {
+        localStorage.setItem(GRADIENT_TEMPLATE_STORAGE_KEY, JSON.stringify(gradientTemplateStore));
+      } catch (err) {
+        console.warn("그라데이션 템플릿 저장 실패:", err);
+      }
+    }
+
+    function savePinStore() {
+      try {
+        localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(pinStore));
+      } catch (err) {
+        console.warn("핀 저장값 저장 실패:", err);
+      }
+    }
+
+    function getFieldPinKey(el) {
+      if (!el) return "";
+      if (el.id) return "id:" + el.id;
+      if (el.dataset.field) {
+        const styleGroup = el.closest(".style-group[data-style-key]");
+        if (styleGroup) {
+          const styleKey = styleGroup.dataset.styleKey || "unknown";
+          const fieldKey = el.dataset.field || "field";
+          const typeKey = (el.type || el.tagName || "input").toLowerCase();
+          return `style:${styleKey}:${fieldKey}:${typeKey}`;
+        }
+      }
+      if (el.dataset.rank && el.dataset.field) return `rank:${el.dataset.rank}:${el.dataset.field}`;
+      if (el.name) return "name:" + el.name;
+      return "";
+    }
+
+    function isPinnableField(el) {
+      if (!el) return false;
+      if (el.dataset?.rank) return false;
+      if (el.tagName === "TEXTAREA") return true;
+      if (el.tagName === "SELECT") return true;
+      if (el.tagName !== "INPUT") return false;
+      return ["text", "file", "number", "range", "checkbox", "color"].includes(el.type);
+    }
+
+    function updatePinnedAssetStatus(inputId) {
+      const statusEl = $("#" + inputId + "PinnedState");
+      if (!statusEl) return;
+      statusEl.textContent = "";
+    }
+
+    function getPinnedAssetValueByInputId(inputId) {
+      if (inputId === "logo1") return state.logos.logo1;
+      if (inputId === "logo2") return state.logos.logo2;
+      if (inputId === "bgImage") return state.background;
+      return null;
+    }
+
+    function setPinnedAssetValueByInputId(inputId, value) {
+      if (inputId === "logo1") state.logos.logo1 = value || null;
+      if (inputId === "logo2") state.logos.logo2 = value || null;
+      if (inputId === "bgImage") state.background = value || null;
+    }
+
+    function capturePinnedFieldValue(el) {
+      const key = getFieldPinKey(el);
+      if (!key || !pinStore.pinned[key]) return;
+      if (el.type === "file") {
+        pinStore.data[key] = getPinnedAssetValueByInputId(el.id) || null;
+      } else {
+        pinStore.data[key] = el.value;
+      }
+      savePinStore();
+    }
+
+    function applyPinnedFieldValue(el) {
+      const key = getFieldPinKey(el);
+      if (!key || !pinStore.pinned[key]) return;
+      if (!(key in pinStore.data)) return;
+
+      if (el.type === "file") return;
+      el.value = pinStore.data[key] ?? "";
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    function findPinAnchor(el) {
+      if (!el) return null;
+      if (el.id) {
+        const byFor = document.querySelector(`label[for="${el.id}"]`);
+        if (byFor) return byFor;
+      }
+
+      if (el.id === "bgImage") {
+        return el.closest(".section")?.querySelector("h2") || null;
+      }
+
+      const prev = el.previousElementSibling;
+      if (prev && (prev.tagName === "LABEL" || prev.tagName === "H3" || prev.tagName === "H2")) return prev;
+
+      const parentLabel = el.parentElement?.querySelector("label");
+      if (parentLabel) return parentLabel;
+
+      if (el.parentElement?.classList?.contains("checkbox-row")) {
+        return el.parentElement.querySelector("span");
+      }
+
+      return null;
+    }
+
+    function enhancePinControls(container = document) {
+      container.querySelectorAll("input, textarea, select").forEach((el) => {
+        if (!isPinnableField(el)) return;
+        if (el.dataset.pinEnhanced === "1") return;
+        const key = getFieldPinKey(el);
+        if (!key) return;
+
+        const pinUi = document.createElement("span");
+        pinUi.className = "pin-inline";
+        pinUi.dataset.pinInlineFor = key;
+        pinUi.innerHTML = `
+          <input type="checkbox" data-pin-toggle-for="${escapeAttr(key)}" />
+          <span>고정</span>
+        `;
+
+        const anchor = findPinAnchor(el);
+        if (anchor) {
+          anchor.appendChild(pinUi);
+        } else {
+          // 라벨을 찾지 못한 경우에만 기존처럼 필드 아래에 배치
+          const row = document.createElement("label");
+          row.className = "checkbox-row pin-row";
+          row.appendChild(pinUi);
+          el.insertAdjacentElement("afterend", row);
+        }
+
+        const checkbox = pinUi.querySelector("input[type='checkbox']");
+        checkbox.checked = !!pinStore.pinned[key];
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            pinStore.pinned[key] = true;
+            capturePinnedFieldValue(el);
+            if (el.type === "file") updatePinnedAssetStatus(el.id);
+            toast("고정 켜짐");
+          } else {
+            delete pinStore.pinned[key];
+            delete pinStore.data[key];
+            savePinStore();
+            if (el.type === "file") updatePinnedAssetStatus(el.id);
+            toast("고정 해제");
+          }
+        });
+
+        const syncEvent = el.type === "file" ? "change" : "input";
+        el.addEventListener(syncEvent, () => capturePinnedFieldValue(el));
+        el.dataset.pinEnhanced = "1";
+      });
+    }
+
+    function restorePinnedAssetsToState() {
+      ["logo1", "logo2", "bgImage"].forEach((id) => {
+        const key = "id:" + id;
+        if (!pinStore.pinned[key]) return;
+        if (!(key in pinStore.data)) return;
+        setPinnedAssetValueByInputId(id, pinStore.data[key]);
+        updatePinnedAssetStatus(id);
+      });
+    }
+
+    function restorePinnedValues(container = document) {
+      container.querySelectorAll("input, textarea, select").forEach((el) => {
+        if (!isPinnableField(el)) return;
+        applyPinnedFieldValue(el);
+      });
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    function getAllRankDefinitions() {
+      const custom = state.customRanks.map((c) => ({
+        key: c.id,
+        label: c.label || c.rank || "추가 등수",
+        rank: c.rank || "—",
+        custom: true,
+      }));
+      return [...FIXED_RANKS, ...custom];
+    }
+
+    function getRankMeta(rankKey) {
+      return getAllRankDefinitions().find((r) => String(r.key) === String(rankKey));
+    }
+
+    function activeRanks() {
+      return getAllRankDefinitions().filter((r) => state.winners[r.key]?.enabled !== false);
+    }
+
+    function getLogoLayout(prefix) {
+      return {
+        size: parseInt($("#" + prefix + "Size").value, 10) || 20,
+        x: parseFloat($("#" + prefix + "X").value) || 0,
+        y: parseFloat($("#" + prefix + "Y").value) || 0,
+      };
+    }
+
+    function appendPlacedLogo(root, prefix, imageUrl, centerAnchor) {
+      if (!imageUrl) return;
+      const layout = getLogoLayout(prefix);
+      const slot = document.createElement("div");
+      slot.className = "logo-slot placed" + (centerAnchor ? " center-anchor" : "");
+      slot.style.left = layout.x + "%";
+      slot.style.top = layout.y + "%";
+      slot.style.width = layout.size + "%";
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      img.alt = prefix;
+      slot.appendChild(img);
+      root.appendChild(slot);
+    }
+
+    function syncLogoRangeLabels() {
+      ["logo1", "logo2"].forEach((id) => {
+        const sizeEl = $("#" + id + "SizeVal");
+        const xEl = $("#" + id + "XVal");
+        const yEl = $("#" + id + "YVal");
+        if (sizeEl) sizeEl.textContent = $("#" + id + "Size").value;
+        if (xEl) xEl.textContent = $("#" + id + "X").value;
+        if (yEl) yEl.textContent = $("#" + id + "Y").value;
+      });
+    }
+
+    function baseFontSizes(canvasHeightPx) {
+      const large = state.widthMm >= 500;
+      return {
+        title1: canvasHeightPx * (large ? 0.092 : 0.085),
+        title2: canvasHeightPx * (large ? 0.038 : 0.034),
+        badge: canvasHeightPx * (large ? 0.027 : 0.025),
+        winner: canvasHeightPx * (large ? 0.068 : 0.060),
+        prize: canvasHeightPx * (large ? 0.095 : 0.085),
+      };
+    }
+
+    function styleScalePercent(cfg) {
+      const deltaPercent = Number(cfg?.sizeScale) || 0;
+      return Math.max(0.2, 1 + deltaPercent / 100);
+    }
+
+    function normalizeHex(value, fallback) {
+      const raw = String(value || "").trim();
+      if (!raw) return fallback;
+      const withHash = raw.startsWith("#") ? raw : "#" + raw;
+      return /^#[0-9A-Fa-f]{6}$/.test(withHash) ? withHash : fallback;
+    }
+
+    function hexToRgba(hex, alpha) {
+      const h = normalizeHex(hex, "#000000").slice(1);
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function buildTextShadow(cfg) {
+      if (!cfg.shadowOn) return "none";
+      const c = hexToRgba(cfg.shadowColor, 0.85);
+      const blur = Math.max(0, parseInt(cfg.shadowBlur, 10) || 0);
+      return `0 2px ${blur}px ${c}, 0 1px 0 rgba(0,0,0,0.4)`;
+    }
+
+    function applyTextFill(el, cfg) {
+      el.style.background = "";
+      el.style.webkitBackgroundClip = "";
+      el.style.backgroundClip = "";
+      el.style.filter = "";
+      el.style.textShadow = "none";
+      el.style.webkitTextStroke = "0 transparent";
+      el.style.paintOrder = "";
+
+      const borderOn = !!cfg.borderOn;
+      const borderWidth = Math.max(0, Number(cfg.borderWidth) || 0);
+      const borderColor = normalizeHex(cfg.borderColor, "#000000");
+
+      if (cfg.mode === "gradient") {
+        const start = normalizeHex(cfg.gradStart, "#ffffff");
+        const end = normalizeHex(cfg.gradEnd, "#cccccc");
+        const angle = parseInt(cfg.gradAngle, 10) || 180;
+        el.style.background = `linear-gradient(${angle}deg, ${start} 0%, ${end} 100%)`;
+        el.style.webkitBackgroundClip = "text";
+        el.style.backgroundClip = "text";
+        el.style.webkitTextFillColor = "transparent";
+        el.style.color = "transparent";
+        if (cfg.shadowOn) {
+          const blur = Math.max(0, parseInt(cfg.shadowBlur, 10) || 0);
+          const glow = hexToRgba(cfg.shadowColor, 0.65);
+          el.style.filter = `drop-shadow(0 2px ${blur}px ${glow})`;
+        }
+      } else {
+        const color = normalizeHex(cfg.color, "#ffffff");
+        el.style.color = color;
+        el.style.webkitTextFillColor = color;
+        el.style.textShadow = buildTextShadow(cfg);
+      }
+
+      if (borderOn && borderWidth > 0) {
+        el.style.webkitTextStroke = `${borderWidth}px ${borderColor}`;
+        el.style.paintOrder = "stroke fill";
+      }
+    }
+
+    function applyEventPillStyle(el, cfg) {
+      const bgColor = normalizeHex(cfg.bgColor, "#ffffff");
+      const opacity = Math.min(100, Math.max(0, parseInt(cfg.bgOpacity, 10) || 0)) / 100;
+      el.style.background = hexToRgba(bgColor, opacity);
+      const borderColor = String(cfg.borderColor || "").trim();
+      if (borderColor) {
+        el.style.border = `1px solid ${normalizeHex(borderColor, "#ffffff")}`;
+      } else {
+        el.style.border = "none";
+      }
+      const shadowBlur = Math.max(0, parseInt(cfg.shadowBlur, 10) || 0);
+      const shadowColor = hexToRgba(cfg.shadowColor, 0.45);
+      if (cfg.shadowOn && opacity > 0) {
+        const yOffset = Math.max(2, Math.round(shadowBlur * 0.4) || 2);
+        const spread = Math.max(0, Math.round(shadowBlur * 0.1));
+        el.style.boxShadow = `0 ${yOffset}px ${shadowBlur}px ${spread}px ${shadowColor}`;
+      } else {
+        el.style.boxShadow = "none";
+      }
+
+      // 이벤트 뱃지 글자를 배경이 비치도록 타공(컷아웃) 처리
+      const cutoutTextEl = el.querySelector(".event-pill-cutout");
+      if (cutoutTextEl) {
+        // 진짜 타공 효과를 위해 별도 텍스트 틴트는 사용하지 않습니다.
+        cutoutTextEl.style.filter = "none";
+      }
+    }
+
+    function getBackdropCompositeCss() {
+      const overlay = "linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.05) 35%, rgba(0, 0, 0, 0.15) 70%, rgba(0, 0, 0, 0.45) 100%)";
+      if (state.background) {
+        return `${overlay}, url(${state.background})`;
+      }
+      return `${overlay}, linear-gradient(135deg, #1a3a4a 0%, #0d1f2d 50%, #2a1a3a 100%)`;
+    }
+
+    function syncEventCutout(root, pxW, pxH) {
+      const pill = root?.querySelector(".event-pill");
+      const text = pill?.querySelector(".event-pill-cutout");
+      if (!pill || !text) return;
+
+      const rootRect = root.getBoundingClientRect();
+      const pillRect = pill.getBoundingClientRect();
+      const offsetX = Math.max(0, pillRect.left - rootRect.left);
+      const offsetY = Math.max(0, pillRect.top - rootRect.top);
+
+      // 실제 배경(이미지+오버레이)을 텍스트에 맵핑하고,
+      // 내부 음영 레이어를 곱해 타공 안쪽이 살짝 눌린 것처럼 보이게 합니다.
+      const eventStyle = state.textStyles?.event || {};
+      const blur = Math.max(0, parseInt(eventStyle.shadowBlur, 10) || 0);
+      const innerAlpha = eventStyle.shadowOn ? Math.min(0.35, 0.1 + blur * 0.01) : 0;
+      const innerTopShade = `linear-gradient(180deg, ${hexToRgba(eventStyle.shadowColor, innerAlpha * 0.55)} 0%, rgba(0,0,0,0) 42%)`;
+      const innerBottomShade = `linear-gradient(0deg, ${hexToRgba(eventStyle.shadowColor, innerAlpha)} 0%, rgba(0,0,0,0) 52%)`;
+      text.style.backgroundImage = eventStyle.shadowOn
+        ? `${innerTopShade}, ${innerBottomShade}, ${getBackdropCompositeCss()}`
+        : getBackdropCompositeCss();
+      text.style.backgroundBlendMode = eventStyle.shadowOn ? "multiply, multiply, normal" : "normal";
+      text.style.backgroundSize = `${pxW}px ${pxH}px`;
+      text.style.backgroundPosition = `-${offsetX}px -${offsetY}px`;
+      text.style.backgroundRepeat = "no-repeat";
+    }
+
+    function getFontStack(fontKey) {
+      if (fontKey === "notoSans") return '"Noto Sans KR", "Malgun Gothic", sans-serif';
+      if (fontKey === "kopub") return '"KoPubDotum", "Malgun Gothic", sans-serif';
+      return '"Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif';
+    }
+
+    function appendRankText(lineEl, rankText, winnerName) {
+      const rankRaw = String(rankText || "").trim();
+      const match = rankRaw.match(/^(\d+)(.*)$/);
+      if (match) {
+        const num = document.createElement("span");
+        num.className = "winner-rank-num";
+        num.textContent = match[1];
+        lineEl.appendChild(num);
+
+        const suffix = document.createElement("span");
+        suffix.className = "winner-rank-suffix";
+        suffix.textContent = match[2] || "";
+        lineEl.appendChild(suffix);
+      } else {
+        lineEl.appendChild(document.createTextNode(rankRaw));
+      }
+
+      lineEl.appendChild(document.createTextNode(" WINNER"));
+      if (winnerName) {
+        lineEl.appendChild(document.createTextNode(" " + winnerName));
+      }
+    }
+
+    function buildPicketElement(rankKey, forExport) {
+      const w = state.widthMm;
+      const h = state.heightMm;
+      const pxW = Math.round(w * MM_TO_PX);
+      const pxH = Math.round(h * MM_TO_PX);
+      const win = state.winners[rankKey] || { name: "", prize: "" };
+      const rankMeta = getRankMeta(rankKey);
+      const fs = baseFontSizes(pxH);
+
+      const title1 = $("#titleLine1").value.trim() || "TOURNAMENT";
+      const title2 = $("#titleLine2").value.trim();
+      const badge = $("#eventBadge").value.trim();
+      const styles = state.textStyles;
+
+      const root = document.createElement("div");
+      root.className = "picket";
+      root.style.width = pxW + "px";
+      root.style.height = pxH + "px";
+      if (forExport) root.id = "picket-export-node";
+      if (!rankMeta) return root;
+
+      const bg = document.createElement("div");
+      bg.className = "picket-bg";
+      if (state.background) {
+        bg.style.backgroundImage = `url(${state.background})`;
+      } else {
+        bg.style.background = "linear-gradient(135deg, #1a3a4a 0%, #0d1f2d 50%, #2a1a3a 100%)";
+      }
+
+      const overlay = document.createElement("div");
+      overlay.className = "picket-overlay";
+
+      const content = document.createElement("div");
+      content.className = "picket-content";
+
+      const center = document.createElement("div");
+      center.className = "picket-center";
+
+      const titles = document.createElement("div");
+      titles.className = "picket-titles";
+
+      const l1 = document.createElement("div");
+      l1.className = "title-line1";
+      l1.style.fontSize = `${fs.title1 * styleScalePercent(styles.titleMain)}px`;
+      l1.style.fontFamily = getFontStack(styles.titleMain.fontFamily);
+      l1.style.transform = `translate(-50%, ${styles.titleMain.offsetY || 0}%)`;
+      l1.textContent = title1;
+      applyTextFill(l1, styles.titleMain);
+
+      titles.appendChild(l1);
+
+      if (title2) {
+        const l2 = document.createElement("div");
+        l2.className = "title-line2";
+        l2.style.fontSize = `${fs.title2 * styleScalePercent(styles.titleSub)}px`;
+        l2.style.fontFamily = getFontStack(styles.titleSub.fontFamily);
+        l2.style.transform = `translate(-50%, ${styles.titleSub.offsetY || 0}%)`;
+        l2.textContent = title2;
+        applyTextFill(l2, styles.titleSub);
+        titles.appendChild(l2);
+      }
+
+      if (badge) {
+        const pill = document.createElement("div");
+        pill.className = "event-pill";
+        pill.style.fontSize = `${fs.badge * styleScalePercent(styles.event)}px`;
+        pill.style.fontFamily = getFontStack(styles.event.fontFamily);
+        pill.style.transform = `translate(-50%, ${styles.event.offsetY || 0}%)`;
+        const cutoutText = document.createElement("span");
+        cutoutText.className = "event-pill-cutout";
+        cutoutText.textContent = badge;
+        pill.appendChild(cutoutText);
+        applyEventPillStyle(pill, styles.event);
+        titles.appendChild(pill);
+      }
+
+      const winnerZone = document.createElement("div");
+      winnerZone.className = "picket-winner-zone";
+      winnerZone.style.height = `${fs.prize * 2.2}px`;
+
+      const winnerLine = document.createElement("div");
+      winnerLine.className = "winner-line";
+      winnerLine.style.fontSize = `${fs.winner * styleScalePercent(styles.winner)}px`;
+      winnerLine.style.fontFamily = getFontStack(styles.winner.fontFamily);
+      winnerLine.style.fontStyle = styles.winner.italicOn ? "italic" : "normal";
+      winnerLine.style.transform = `translate(-50%, ${styles.winner.offsetY || 0}%)`;
+      appendRankText(winnerLine, rankMeta.rank, win.name);
+      applyTextFill(winnerLine, styles.winner);
+
+      const prizeLine = document.createElement("div");
+      prizeLine.className = "prize-line";
+      prizeLine.style.fontSize = `${fs.prize * styleScalePercent(styles.prize)}px`;
+      prizeLine.style.fontFamily = getFontStack(styles.prize.fontFamily);
+      prizeLine.style.fontStyle = styles.prize.italicOn ? "italic" : "normal";
+      prizeLine.style.transform = `translate(-50%, ${styles.prize.offsetY || 0}%)`;
+      prizeLine.textContent = formatPrize(win.prize);
+      applyTextFill(prizeLine, styles.prize);
+
+      winnerZone.appendChild(winnerLine);
+      winnerZone.appendChild(prizeLine);
+
+      center.appendChild(titles);
+      center.appendChild(winnerZone);
+      content.appendChild(center);
+
+      root.appendChild(bg);
+      root.appendChild(overlay);
+      root.appendChild(content);
+
+      appendPlacedLogo(root, "logo1", state.logos.logo1, false);
+      appendPlacedLogo(root, "logo2", state.logos.logo2, true);
+
+      return root;
+    }
+
+    function formatPrize(raw) {
+      if (!raw) return "";
+      const t = String(raw).trim();
+      // 사용자가 입력한 GTD 표기(띄어쓰기 포함/미포함)를 그대로 유지합니다.
+      if (/GTD/i.test(t)) return t;
+      const num = t.replace(/[^\d]/g, "");
+      if (!num) return t;
+      const formatted = Number(num).toLocaleString("en-US");
+      return formatted + "GTD";
+    }
+
+    function renderPreview() {
+      const container = $("#picketPreview");
+      container.innerHTML = "";
+      const node = buildPicketElement(state.activeRank, false);
+      container.appendChild(node);
+      requestAnimationFrame(() => {
+        syncEventCutout(node, Math.round(state.widthMm * MM_TO_PX), Math.round(state.heightMm * MM_TO_PX));
+      });
+
+      const meta = getRankMeta(state.activeRank);
+      const rankLabel = meta ? meta.label : "—";
+      $("#previewLabel").textContent = `미리보기 — ${rankLabel} (${state.widthMm}×${state.heightMm}mm)`;
+      applyZoom();
+    }
+
+    function applyZoom() {
+      const pct = parseInt($("#zoomRange").value, 10) / 100;
+      $("#zoomPct").textContent = Math.round(pct * 100) + "%";
+      $("#previewScaler").style.transform = `scale(${pct})`;
+    }
+
+    function updatePanCursor() {
+      const frame = $(".preview-frame");
+      if (!frame) return;
+      frame.classList.toggle("space-pan", panState.spaceDown && !panState.dragging);
+    }
+
+    function renderRankTabs() {
+      const tabs = $("#rankTabs");
+      tabs.innerHTML = "";
+      activeRanks().forEach((r) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = r.label;
+        btn.classList.toggle("active", r.key === state.activeRank);
+        btn.addEventListener("click", () => {
+          state.activeRank = r.key;
+          renderRankTabs();
+          renderPreview();
+        });
+        tabs.appendChild(btn);
+      });
+    }
+
+    function bindWinnerInputs(container) {
+      container.querySelectorAll("input[data-rank][data-field]").forEach((inp) => {
+        inp.addEventListener("input", () => {
+          const rank = inp.dataset.rank;
+          const field = inp.dataset.field;
+          if (field === "label" || field === "rank") {
+            const custom = state.customRanks.find((c) => c.id === rank);
+            if (custom) {
+              custom[field] = inp.value;
+              renderRankTabs();
+              if (String(rank) === String(state.activeRank)) renderPreview();
+            }
+            return;
+          }
+          if (!state.winners[rank]) return;
+          state.winners[rank][field] = inp.value;
+          if (String(rank) === String(state.activeRank)) renderPreview();
+        });
+      });
+    }
+
+    function renderWinnerFields() {
+      const wrap = $("#winnerFields");
+      wrap.innerHTML = "";
+      FIXED_RANKS.forEach((r) => {
+        const w = state.winners[r.key];
+        const block = document.createElement("div");
+        block.className = "winner-block";
+        block.innerHTML = `
+          <h3>${r.label}</h3>
+          <label>이름</label>
+          <input type="text" data-rank="${r.key}" data-field="name" value="${escapeAttr(w.name)}" placeholder="홍길동 / 팀명" />
+          <label>상금</label>
+          <input type="text" data-rank="${r.key}" data-field="prize" value="${escapeAttr(w.prize)}" placeholder="3,200,000GTD" />
+        `;
+        wrap.appendChild(block);
+      });
+      bindWinnerInputs(wrap);
+      renderCustomRankFields();
+      enhancePinControls(wrap);
+      restorePinnedValues(wrap);
+    }
+
+    function renderCustomRankFields() {
+      const wrap = $("#customRankList");
+      wrap.innerHTML = "";
+      state.customRanks.forEach((c) => {
+        const w = state.winners[c.id] || { name: "", prize: "" };
+        const block = document.createElement("div");
+        block.className = "winner-block";
+        block.innerHTML = `
+          <h3 class="rank-editable">
+            <input type="text" data-rank="${escapeAttr(c.id)}" data-field="label" value="${escapeAttr(c.label)}" placeholder="6등" aria-label="등수 (한글)" />
+            (<input type="text" class="rank-en-input" data-rank="${escapeAttr(c.id)}" data-field="rank" value="${escapeAttr(c.rank)}" placeholder="6th" aria-label="등수 (영문)" />)
+            <button type="button" class="btn-remove-rank" data-remove-rank="${escapeAttr(c.id)}">삭제</button>
+          </h3>
+          <label>이름</label>
+          <input type="text" data-rank="${escapeAttr(c.id)}" data-field="name" value="${escapeAttr(w.name)}" placeholder="홍길동 / 팀명" />
+          <label>상금</label>
+          <input type="text" data-rank="${escapeAttr(c.id)}" data-field="prize" value="${escapeAttr(w.prize)}" placeholder="3,200,000GTD" />
+        `;
+        wrap.appendChild(block);
+      });
+
+      bindWinnerInputs(wrap);
+      wrap.querySelectorAll("[data-remove-rank]").forEach((btn) => {
+        btn.addEventListener("click", () => removeCustomRank(btn.dataset.removeRank));
+      });
+      enhancePinControls(wrap);
+      restorePinnedValues(wrap);
+    }
+
+    function addCustomRank() {
+      const id = "c_" + Date.now();
+      state.customRanks.push({ id, label: "", rank: "" });
+      state.winners[id] = { name: "", prize: "", enabled: true };
+      state.activeRank = id;
+      renderRankTabs();
+      renderCustomRankFields();
+      renderPreview();
+    }
+
+    function removeCustomRank(id) {
+      state.customRanks = state.customRanks.filter((c) => c.id !== id);
+      delete state.winners[id];
+      if (String(state.activeRank) === String(id)) {
+        state.activeRank = activeRanks()[0]?.key ?? 1;
+      }
+      renderRankTabs();
+      renderCustomRankFields();
+      renderPreview();
+    }
+
+    function escapeAttr(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;");
+    }
+
+    async function exportPicketPdf(rankKey) {
+      const { jsPDF } = window.jspdf;
+      const container = $("#export-render");
+      container.innerHTML = "";
+      const node = buildPicketElement(rankKey, true);
+      container.appendChild(node);
+      syncEventCutout(node, Math.round(state.widthMm * MM_TO_PX), Math.round(state.heightMm * MM_TO_PX));
+
+      const scaleFactor = 4;
+      const canvas = await html2canvas(node, {
+        scale: scaleFactor,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const pdf = new jsPDF({
+        orientation: state.widthMm > state.heightMm ? "landscape" : "portrait",
+        unit: "mm",
+        format: [state.widthMm, state.heightMm],
+        compress: true,
+      });
+
+      pdf.addImage(imgData, "JPEG", 0, 0, state.widthMm, state.heightMm);
+      const meta = getRankMeta(rankKey);
+      const rankSlug = (meta?.rank || "rank").replace(/[^\w]+/g, "_");
+      const badge = ($("#eventBadge").value || "event").replace(/[^\w가-힣]+/g, "_").slice(0, 24);
+      pdf.save(`picket_${badge}_${rankSlug}.pdf`);
+      container.innerHTML = "";
+    }
+
+    async function exportAllPdf() {
+      const ranks = activeRanks();
+      if (!ranks.length) return;
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: state.widthMm > state.heightMm ? "landscape" : "portrait",
+        unit: "mm",
+        format: [state.widthMm, state.heightMm],
+        compress: true,
+      });
+
+      const container = $("#export-render");
+      const scaleFactor = 4;
+      const badge = ($("#eventBadge").value || "event").replace(/[^\w가-힣]+/g, "_").slice(0, 24);
+
+      for (let i = 0; i < ranks.length; i++) {
+        const rankKey = ranks[i].key;
+        container.innerHTML = "";
+        const node = buildPicketElement(rankKey, true);
+        container.appendChild(node);
+        syncEventCutout(node, Math.round(state.widthMm * MM_TO_PX), Math.round(state.heightMm * MM_TO_PX));
+
+        const canvas = await html2canvas(node, {
+          scale: scaleFactor,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          logging: false,
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+        if (i > 0) pdf.addPage([state.widthMm, state.heightMm], state.widthMm > state.heightMm ? "landscape" : "portrait");
+        pdf.addImage(imgData, "JPEG", 0, 0, state.widthMm, state.heightMm);
+      }
+
+      container.innerHTML = "";
+      pdf.save(`picket_${badge}_all.pdf`);
+    }
+
+    function bindEvents() {
+      $$(".control-tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tab = btn.dataset.tab;
+          $$(".control-tab").forEach((b) => b.classList.toggle("active", b === btn));
+          $("#tabContent").classList.toggle("active", tab === "content");
+          $("#tabStyles").classList.toggle("active", tab === "styles");
+        });
+      });
+
+      $$(".size-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          $$(".size-btn").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          state.widthMm = parseInt(btn.dataset.w, 10);
+          state.heightMm = parseInt(btn.dataset.h, 10);
+          renderPreview();
+        });
+      });
+
+      $("#logo1").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        state.logos.logo1 = f ? await readFileAsDataURL(f) : null;
+        capturePinnedFieldValue(e.target);
+        updatePinnedAssetStatus("logo1");
+        renderPreview();
+      });
+
+      $("#logo2").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        state.logos.logo2 = f ? await readFileAsDataURL(f) : null;
+        capturePinnedFieldValue(e.target);
+        updatePinnedAssetStatus("logo2");
+        renderPreview();
+      });
+
+      ["logo1", "logo2"].forEach((id) => {
+        $("#" + id + "Size").addEventListener("input", () => {
+          syncLogoRangeLabels();
+          renderPreview();
+        });
+        ["X", "Y"].forEach((axis) => {
+          $("#" + id + axis).addEventListener("input", renderPreview);
+        });
+      });
+      syncLogoRangeLabels();
+
+      $("#bgImage").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        state.background = f ? await readFileAsDataURL(f) : null;
+        capturePinnedFieldValue(e.target);
+        updatePinnedAssetStatus("bgImage");
+        renderPreview();
+      });
+
+      ["#titleLine1", "#titleLine2", "#eventBadge"].forEach((sel) => {
+        $(sel).addEventListener("input", renderPreview);
+      });
+
+      $("#addCustomRank").addEventListener("click", addCustomRank);
+
+      $("#zoomRange").addEventListener("input", applyZoom);
+
+      const previewFrame = $(".preview-frame");
+      if (previewFrame) {
+        document.addEventListener("keydown", (e) => {
+          if (e.code !== "Space") return;
+          const tag = document.activeElement?.tagName;
+          if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+          if (!panState.spaceDown) {
+            panState.spaceDown = true;
+            updatePanCursor();
+          }
+          e.preventDefault();
+        });
+
+        document.addEventListener("keyup", (e) => {
+          if (e.code !== "Space") return;
+          panState.spaceDown = false;
+          if (!panState.dragging) updatePanCursor();
+        });
+
+        previewFrame.addEventListener("mousedown", (e) => {
+          if (!panState.spaceDown || e.button !== 0) return;
+          panState.dragging = true;
+          panState.startX = e.clientX;
+          panState.startY = e.clientY;
+          panState.scrollLeft = previewFrame.scrollLeft;
+          panState.scrollTop = previewFrame.scrollTop;
+          previewFrame.classList.add("panning");
+          e.preventDefault();
+        });
+
+        document.addEventListener("mousemove", (e) => {
+          if (!panState.dragging) return;
+          const dx = e.clientX - panState.startX;
+          const dy = e.clientY - panState.startY;
+          previewFrame.scrollLeft = panState.scrollLeft - dx;
+          previewFrame.scrollTop = panState.scrollTop - dy;
+          e.preventDefault();
+        });
+
+        document.addEventListener("mouseup", () => {
+          if (!panState.dragging) return;
+          panState.dragging = false;
+          previewFrame.classList.remove("panning");
+          updatePanCursor();
+        });
+
+        window.addEventListener("blur", () => {
+          panState.spaceDown = false;
+          panState.dragging = false;
+          previewFrame.classList.remove("panning");
+          updatePanCursor();
+        });
+      }
+
+      $("#exportCurrent").addEventListener("click", async () => {
+        const btn = $("#exportCurrent");
+        btn.disabled = true;
+        toast("PDF 생성 중…");
+        try {
+          await exportPicketPdf(state.activeRank);
+          toast("PDF 저장 완료");
+        } catch (err) {
+          console.error(err);
+          toast("오류: " + (err.message || "PDF 생성 실패"));
+        }
+        btn.disabled = false;
+      });
+
+      $("#exportAll").addEventListener("click", async () => {
+        const btn = $("#exportAll");
+        btn.disabled = true;
+        toast("전체 PDF 생성 중… (잠시만 기다려 주세요)");
+        try {
+          await exportAllPdf();
+          toast("전체 PDF 저장 완료");
+        } catch (err) {
+          console.error(err);
+          toast("오류: " + (err.message || "PDF 생성 실패"));
+        }
+        btn.disabled = false;
+      });
+    }
+
+    // 스타일 탭 컨트롤이 아직 구현되지 않았더라도
+    // 전체 스크립트가 죽지 않도록 하는 안전 장치입니다.
+    function bindStyleControls() {
+      const getRangeSuffix = (field) => {
+        if (field.toLowerCase().includes("angle")) return "°";
+        if (field.toLowerCase().includes("opacity") || field === "sizeScale" || field === "offsetY") return "%";
+        return "px";
+      };
+
+      const formatRangeValue = (field, rawValue) => {
+        const num = Number(rawValue);
+        if (!Number.isFinite(num)) return String(rawValue);
+        if (field === "offsetY") {
+          if (num > 0) return "+" + num;
+          if (num < 0) return String(num);
+          return "0";
+        }
+        if (field === "sizeScale") {
+          if (num > 0) return "+" + num;
+          if (num < 0) return String(num);
+          return "0";
+        }
+        return String(num);
+      };
+
+      $$(".style-group").forEach((group) => {
+        const key = group.dataset.styleKey;
+        const cfg = state.textStyles[key];
+        if (!cfg) return;
+
+        let applyModeUi = null;
+        const modeButtons = group.querySelectorAll(".style-mode button[data-mode]");
+        if (modeButtons.length && "mode" in cfg) {
+          applyModeUi = (mode) => {
+            modeButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.mode === mode));
+            const solid = group.querySelector(`[data-solid-for="${key}"]`);
+            const grad = group.querySelector(`[data-gradient-for="${key}"]`);
+            if (solid) solid.hidden = mode !== "solid";
+            if (grad) grad.hidden = mode !== "gradient";
+          };
+          applyModeUi(cfg.mode);
+          modeButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              cfg.mode = btn.dataset.mode;
+              applyModeUi(cfg.mode);
+              renderPreview();
+            });
+          });
+        }
+
+        group.querySelectorAll("[data-field]").forEach((input) => {
+          const field = input.dataset.field;
+          if (!field || !(field in cfg)) return;
+
+          if (input.type === "checkbox") {
+            input.checked = !!cfg[field];
+          } else if (input.type === "color" && !cfg[field]) {
+            // 빈 문자열 허용 필드(borderColor)에서는 컬러 피커 기본값을 유지합니다.
+            cfg[field] = input.value;
+            const textPeer = input.parentElement?.querySelector('input[type="text"][data-field="' + field + '"]');
+            if (textPeer && textPeer !== input && !textPeer.value) cfg[field] = "";
+          } else {
+            input.value = cfg[field];
+          }
+
+          const updateValue = () => {
+            if (input.type === "checkbox") {
+              cfg[field] = input.checked;
+            } else if (input.type === "range" || input.type === "number") {
+              cfg[field] = Number(input.value);
+            } else {
+              cfg[field] = input.value;
+            }
+
+            // 고정 복원 시 gradStart/gradEnd/gradAngle 값은 되돌아오지만
+            // 모드가 solid로 남아 흰색으로 보이던 문제를 방지합니다.
+            // 그라데이션 관련 필드가 바뀌면 모드를 gradient로 맞춥니다.
+            if (field === "gradStart" || field === "gradEnd" || field === "gradAngle") {
+              if ("mode" in cfg) cfg.mode = "gradient";
+              if (applyModeUi) applyModeUi("gradient");
+            }
+
+            if (input.type === "color") {
+              const textPeer = input.parentElement?.querySelector('input[type="text"][data-field="' + field + '"]');
+              if (textPeer && textPeer !== input) textPeer.value = input.value;
+            } else if (input.type === "text") {
+              const colorPeer = input.parentElement?.querySelector('input[type="color"][data-field="' + field + '"]');
+              if (colorPeer && colorPeer !== input && /^#[0-9A-Fa-f]{6}$/.test(input.value.trim())) {
+                colorPeer.value = input.value.trim();
+              }
+            }
+
+            const label = group.querySelector(`[data-range-label="${field}"]`);
+            if (label) {
+              const suffix = getRangeSuffix(field);
+              label.textContent = formatRangeValue(field, input.value) + suffix;
+            }
+            renderPreview();
+          };
+
+          input.addEventListener("input", updateValue);
+          input.addEventListener("change", updateValue);
+          if (input.type === "range") {
+            const label = group.querySelector(`[data-range-label="${field}"]`);
+            if (label) {
+              const suffix = getRangeSuffix(field);
+              label.textContent = formatRangeValue(field, input.value) + suffix;
+            }
+          }
+        });
+      });
+    }
+
+    function populateGradientTemplateSelect(styleKey) {
+      const selectEl = $("#" + styleKey + "GradientTemplateSelect");
+      if (!selectEl) return;
+      const templates = Array.isArray(gradientTemplateStore[styleKey]) ? gradientTemplateStore[styleKey] : [];
+      selectEl.innerHTML = '<option value="">템플릿 선택</option>';
+      templates.forEach((tpl) => {
+        const opt = document.createElement("option");
+        opt.value = tpl.id;
+        opt.textContent = `${tpl.name} (${tpl.start} -> ${tpl.end})`;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function setStyleFieldInputs(styleKey, field, value) {
+      const group = document.querySelector(`.style-group[data-style-key="${styleKey}"]`);
+      if (!group) return;
+      const fieldInputs = group.querySelectorAll(`[data-field="${field}"]`);
+      fieldInputs.forEach((el) => {
+        if (el.type === "checkbox") {
+          el.checked = !!value;
+          return;
+        }
+        el.value = value;
+      });
+    }
+
+    function applyGradientTemplate(styleKey, templateId) {
+      const templateList = Array.isArray(gradientTemplateStore[styleKey]) ? gradientTemplateStore[styleKey] : [];
+      const template = templateList.find((tpl) => tpl.id === templateId);
+      if (!template) {
+        toast("템플릿을 선택해 주세요");
+        return;
+      }
+      const cfg = state.textStyles[styleKey];
+      if (!cfg) return;
+      cfg.mode = "gradient";
+      cfg.gradStart = template.start;
+      cfg.gradEnd = template.end;
+      cfg.gradAngle = template.angle;
+
+      setStyleFieldInputs(styleKey, "gradStart", cfg.gradStart);
+      setStyleFieldInputs(styleKey, "gradEnd", cfg.gradEnd);
+      setStyleFieldInputs(styleKey, "gradAngle", cfg.gradAngle);
+
+      const group = document.querySelector(`.style-group[data-style-key="${styleKey}"]`);
+      if (group) {
+        const angleLabel = group.querySelector('[data-range-label="gradAngle"]');
+        if (angleLabel) angleLabel.textContent = `${cfg.gradAngle}°`;
+        const modeButtons = group.querySelectorAll(".style-mode button[data-mode]");
+        modeButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.mode === "gradient"));
+        const solid = group.querySelector(`[data-solid-for="${styleKey}"]`);
+        const grad = group.querySelector(`[data-gradient-for="${styleKey}"]`);
+        if (solid) solid.hidden = true;
+        if (grad) grad.hidden = false;
+      }
+      renderPreview();
+      toast("그라데이션 템플릿 적용됨");
+    }
+
+    function saveCurrentGradientTemplate(styleKey) {
+      const cfg = state.textStyles[styleKey];
+      if (!cfg) return;
+      const nameInput = $("#" + styleKey + "GradientTemplateName");
+      const name = String(nameInput?.value || "").trim();
+      if (!name) {
+        toast("템플릿 이름을 입력해 주세요");
+        return;
+      }
+      const template = sanitizeGradientTemplate({
+        id: `${styleKey}_${Date.now()}`,
+        name,
+        start: cfg.gradStart,
+        end: cfg.gradEnd,
+        angle: cfg.gradAngle,
+      }, styleKey);
+      if (!template) {
+        toast("현재 그라데이션 값이 유효하지 않습니다");
+        return;
+      }
+      if (!Array.isArray(gradientTemplateStore[styleKey])) {
+        gradientTemplateStore[styleKey] = [];
+      }
+      gradientTemplateStore[styleKey].push(template);
+      saveGradientTemplateStore();
+      populateGradientTemplateSelect(styleKey);
+      const selectEl = $("#" + styleKey + "GradientTemplateSelect");
+      if (selectEl) selectEl.value = template.id;
+      if (nameInput) nameInput.value = "";
+      toast("그라데이션 템플릿 저장됨");
+    }
+
+    function deleteSelectedGradientTemplate(styleKey) {
+      const selectEl = $("#" + styleKey + "GradientTemplateSelect");
+      if (!selectEl || !selectEl.value) {
+        toast("삭제할 템플릿을 선택해 주세요");
+        return;
+      }
+      const templateId = selectEl.value;
+      const list = Array.isArray(gradientTemplateStore[styleKey]) ? gradientTemplateStore[styleKey] : [];
+      const nextList = list.filter((tpl) => tpl.id !== templateId);
+      if (nextList.length === list.length) {
+        toast("선택한 템플릿을 찾을 수 없습니다");
+        return;
+      }
+      gradientTemplateStore[styleKey] = nextList;
+      saveGradientTemplateStore();
+      populateGradientTemplateSelect(styleKey);
+      renderPreview();
+      toast("그라데이션 템플릿 삭제됨");
+    }
+
+    function bindGradientTemplateControls() {
+      ["winner", "prize"].forEach((styleKey) => {
+        populateGradientTemplateSelect(styleKey);
+        const selectEl = $("#" + styleKey + "GradientTemplateSelect");
+        const applyBtn = $("#" + styleKey + "GradientTemplateApply");
+        const saveBtn = $("#" + styleKey + "GradientTemplateSave");
+        const deleteBtn = $("#" + styleKey + "GradientTemplateDelete");
+        if (applyBtn && selectEl) {
+          applyBtn.addEventListener("click", () => applyGradientTemplate(styleKey, selectEl.value));
+        }
+        if (selectEl) {
+          selectEl.addEventListener("change", () => {
+            if (!selectEl.value) return;
+            applyGradientTemplate(styleKey, selectEl.value);
+          });
+        }
+        if (saveBtn) {
+          saveBtn.addEventListener("click", () => saveCurrentGradientTemplate(styleKey));
+        }
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", () => deleteSelectedGradientTemplate(styleKey));
+        }
+      });
+    }
+
+    function init() {
+      restorePinnedAssetsToState();
+      ["logo1", "logo2", "bgImage"].forEach(updatePinnedAssetStatus);
+      enhancePinControls(document);
+      // 스타일 입력 핸들러를 먼저 바인딩해야 고정값 복원 시 state까지 반영됩니다.
+      // (기존 순서에서는 복원 직후 bindStyleControls가 기본값으로 다시 덮어씀)
+      bindStyleControls();
+      bindGradientTemplateControls();
+      restorePinnedValues(document);
+      renderRankTabs();
+      renderWinnerFields();
+      renderCustomRankFields();
+      renderPreview();
+      bindEvents();
+    }
+
+    init();
+  </script>
+</body>
+</html>
